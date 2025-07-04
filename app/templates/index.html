@@ -7,16 +7,21 @@
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
   <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-    <h2 class="text-2xl font-bold mb-6 text-center">Join PayTosha</h2>
+    <h2 class="text-2xl font-bold mb-6 text-center text-teal-700">Join PayTosha</h2>
 
     <form id="user-form" class="space-y-4">
       <input type="text" name="first_name" placeholder="First Name" required class="w-full p-2 border rounded">
       <input type="text" name="last_name" placeholder="Last Name" required class="w-full p-2 border rounded">
       <input type="text" name="username" placeholder="Username" required class="w-full p-2 border rounded">
       <input type="email" name="email" placeholder="Email" required class="w-full p-2 border rounded">
-      <input type="url" name="linkedin_url" placeholder="LinkedIn URL (optional)" class="w-full p-2 border rounded">
 
-      <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded hover:bg-teal-700">Create Account</button>
+      <input type="url" name="linkedin_url" placeholder="LinkedIn URL (optional)" class="w-full p-2 border rounded">
+      <input type="url" name="x_url" placeholder="X / Twitter URL (optional)" class="w-full p-2 border rounded">
+      <input type="url" name="facebook_url" placeholder="Facebook URL (optional)" class="w-full p-2 border rounded">
+      <input type="url" name="github_url" placeholder="GitHub URL (optional)" class="w-full p-2 border rounded">
+      <input type="url" name="personal_website" placeholder="Personal Website (optional)" class="w-full p-2 border rounded">
+
+      <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded hover:bg-teal-700 transition">Create Account</button>
     </form>
 
     <div id="message" class="mt-4 text-center text-sm"></div>
@@ -28,27 +33,31 @@
 
       const form = e.target;
       const data = Object.fromEntries(new FormData(form).entries());
-      // Remove empty strings so they become `null`/missing in backend
+      
+      // Remove empty strings (convert to null/missing)
       Object.keys(data).forEach(key => {
-        if (data[key] === "") delete data[key];
-      });
-      console.log(data);
-
-      const res = await fetch("/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        if (data[key].trim() === "") delete data[key];
       });
 
       const msgBox = document.getElementById("message");
 
-      if (res.ok) {
-        msgBox.textContent = "✅ Account created successfully!";
-        msgBox.className = "text-green-600";
-        form.reset();
-      } else {
-        const err = await res.json();
-        msgBox.textContent = `❌ ${err.detail}`;
+      try {
+        const res = await fetch("/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+          window.location.href = "/welcome";  // ✅ Redirect after success
+        } 
+        else {
+          const err = await res.json();
+          msgBox.textContent = `❌ ${err.detail}`;
+          msgBox.className = "text-red-600";
+        }
+      } catch (err) {
+        msgBox.textContent = "❌ Failed to reach server.";
         msgBox.className = "text-red-600";
       }
     });
