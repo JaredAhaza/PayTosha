@@ -1,17 +1,277 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ user_language or 'en' }}">
 <head>
-  <meta charset="UTF-8">
-  <title>Welcome to PayTosha</title>
+  <meta charset="UTF-8" />
+  <title>{{ translations.welcome or 'Welcome' }} to PayTosha</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/static/location.js"></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
-<body class="bg-white flex items-center justify-center min-h-screen text-center">
-  <div class="p-10">
-    <h1 class="text-3xl font-bold text-teal-700 mb-4">Welcome to PayTosha 🎉</h1>
-    <p class="text-lg text-gray-700 mb-2">We’re excited to have you onboard!</p>
-    <p class="text-md text-gray-600 mb-6">Your experience will be tailored just for you.</p>
+<body class="{% if device_type == 'mobile' %}bg-gray-100{% else %}bg-gray-50{% endif %} min-h-screen flex items-center justify-center text-gray-800">
+  <div class="{% if device_type == 'mobile' %}bg-white shadow-sm rounded-lg p-4 mx-4{% else %}bg-white shadow-md rounded-xl p-8 max-w-2xl{% endif %} w-full text-center">
+    
+    <!-- 🌐 Language Selector -->
+    <div x-data="{ language: '{{ user_language or 'en' }}' }" class="mb-6">
+      <div class="flex justify-center items-center space-x-4">
+        <span class="text-sm font-medium text-gray-700">🌐 Language:</span>
+        <select x-model="language" @change="setLanguage(language)" class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="en" :selected="language === 'en'">English</option>
+          <option value="sw" :selected="language === 'sw'">Kiswahili</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- 🎯 Adaptive Header Based on Tier -->
+    {% if tier == "premium" %}
+      <h1 class="text-3xl font-bold text-emerald-700 mb-2">🌟 {{ translations.welcome or 'Welcome' }} to PayTosha Premium!</h1>
+      <p class="text-lg text-emerald-600 mb-6">{{ translations.premium_plan_desc or 'You\'re on our premium plan - enjoy exclusive features!' }}</p>
+    {% elif tier == "student" %}
+      <h1 class="text-3xl font-bold text-blue-700 mb-2">📚 {{ translations.welcome or 'Welcome' }} to PayTosha Student!</h1>
+      <p class="text-lg text-blue-600 mb-6">{{ translations.student_plan_desc or 'Special student pricing activated - 70% discount applied!' }}</p>
+    {% elif tier == "fair" %}
+      <h1 class="text-3xl font-bold text-orange-700 mb-2">🌍 {{ translations.welcome or 'Welcome' }} to PayTosha Fair!</h1>
+      <p class="text-lg text-orange-600 mb-6">{{ translations.fair_plan_desc or 'Regional pricing applied - fair pricing for your area!' }}</p>
+    {% elif tier == "free" %}
+      <h1 class="text-3xl font-bold text-gray-700 mb-2">🎉 {{ translations.welcome or 'Welcome' }} to PayTosha Free!</h1>
+      <p class="text-lg text-gray-600 mb-6">{{ translations.free_plan_desc or 'Start exploring with our free tier - upgrade anytime!' }}</p>
+    {% else %}
+      <h1 class="text-3xl font-bold text-teal-700 mb-2">🎉 {{ translations.welcome or 'Welcome' }} to PayTosha!</h1>
+      <p class="text-lg text-gray-600 mb-6">{{ translations.standard_plan_desc or 'Your experience will now be personalized just for you.' }}</p>
+    {% endif %}
 
-    <a href="/" class="text-teal-600 hover:underline">← Back to Home</a>
+    <div class="text-left space-y-3">
+      <!-- 🎯 Adaptive Account Info Based on Device -->
+      <h2 class="{% if device_type == 'mobile' %}text-lg{% else %}text-xl{% endif %} font-semibold text-gray-800 mb-2">👤 {{ translations.account_info or 'Account Info' }}</h2>
+      <p><strong>{{ translations.full_name or 'Full Name' }}:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+      <p><strong>{{ translations.username or 'Username' }}:</strong> {{ user.username if user else translations.unknown or 'Unknown' }}</p>
+      <p><strong>{{ translations.email or 'Email' }}:</strong> {{ user.email }}</p>
+      <p><strong>{{ translations.account_created or 'Account Created At' }}:</strong> {{ user.created_at_eat }}</p>
+      
+      <!-- 🌍 Location Information -->
+      <div class="bg-blue-50 p-3 rounded-lg mt-4">
+        <h3 class="font-semibold text-blue-800 mb-2">🌍 {{ translations.location_context or 'Location & Context' }}</h3>
+        <p class="text-sm text-blue-700"><strong>{{ translations.location or 'Location' }}:</strong> <span class="location-display">{{ context.location or translations.detecting or "Detecting..." }}</span></p>
+        <p class="text-sm text-blue-700"><strong>{{ translations.country or 'Country' }}:</strong> {{ context.country or translations.unknown or "Unknown" }}</p>
+        <p class="text-sm text-blue-700"><strong>{{ translations.city or 'City' }}:</strong> {{ context.city or translations.unknown or "Unknown" }}</p>
+        <p class="text-sm text-blue-700"><strong>{{ translations.timezone or 'Timezone' }}:</strong> {{ context.timezone or translations.unknown or "Unknown" }}</p>
+        <p class="text-sm text-blue-700"><strong>{{ translations.time_of_day or 'Time of Day' }}:</strong> {{ context.time_of_day or translations.unknown or "Unknown" }}</p>
+        {% if context.coordinates %}
+        <p class="text-sm text-blue-700"><strong>{{ translations.coordinates or 'Coordinates' }}:</strong> {{ "%.4f"|format(context.coordinates.latitude) }}, {{ "%.4f"|format(context.coordinates.longitude) }}</p>
+        {% endif %}
+      </div>
+      
+      <!-- 📱 Device-Specific Information -->
+      {% if device_type == "mobile" %}
+        <div class="bg-blue-50 p-3 rounded-lg mt-4">
+          <p class="text-sm text-blue-700">📱 {{ translations.mobile_optimized or 'Mobile-optimized experience activated' }}</p>
+        </div>
+      {% elif device_type == "desktop" %}
+        <div class="bg-green-50 p-3 rounded-lg mt-4">
+          <p class="text-sm text-green-700">🖥️ {{ translations.desktop_experience or 'Full desktop experience available' }}</p>
+        </div>
+      {% endif %}
+      
+      <!-- 🌐 Browser and OS Information -->
+      {% if browser and operating_system %}
+        <div class="bg-gray-50 p-3 rounded-lg mt-2">
+          <p class="text-sm text-gray-600">{{ translations.using_browser or 'Using' }} {{ browser }} {{ translations.on_os or 'on' }} {{ operating_system }}</p>
+        </div>
+      {% endif %}
+
+      <h2 class="text-xl font-semibold text-gray-800 mt-6">🧠 {{ translations.smart_insights or 'Smart Insights' }}</h2>
+      <p><strong>{{ translations.persona_guess or 'Persona Guess' }}:</strong> {{ context.persona_guess or "N/A" }}</p>
+      <p><strong>{{ translations.confidence or 'Confidence' }}:</strong> {{ context.persona_confidence or "N/A" }}</p>
+      <p><strong>{{ translations.sources or 'Sources' }}:</strong> {{ context.persona_sources or "N/A" }}</p>
+      {% if context.persona_reasoning %}
+        <p><strong>{{ translations.reasoning or 'Reasoning' }}:</strong></p>
+        <ul class="list-disc ml-5 text-sm text-gray-700">
+          {% for reason in context.persona_reasoning %}
+            <li>{{ reason }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      
+      <!-- 🎯 Persona-Specific Content Blocks -->
+      {% if persona == "student" %}
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
+          <h3 class="font-semibold text-blue-800">📚 {{ translations.student_resources or 'Student Resources' }}</h3>
+          <ul class="text-sm text-blue-700 mt-2">
+            <li>• {{ translations.student_verification_required or 'Student verification required for discount' }}</li>
+            <li>• {{ translations.access_educational_tools or 'Access to educational tools and resources' }}</li>
+            <li>• {{ translations.limited_usage_student or 'Limited usage with student benefits' }}</li>
+          </ul>
+        </div>
+      {% elif persona == "tech_professional" %}
+        <div class="bg-purple-50 border-l-4 border-purple-400 p-4 mt-4">
+          <h3 class="font-semibold text-purple-800">👨‍💻 {{ translations.developer_tools or 'Developer Tools' }}</h3>
+          <ul class="text-sm text-purple-700 mt-2">
+            <li>• {{ translations.advanced_analytics or 'Advanced analytics and integrations' }}</li>
+            <li>• {{ translations.api_access or 'API access and developer documentation' }}</li>
+            <li>• {{ translations.priority_support or 'Priority support for technical issues' }}</li>
+          </ul>
+        </div>
+      {% elif persona == "freelancer" %}
+        <div class="bg-orange-50 border-l-4 border-orange-400 p-4 mt-4">
+          <h3 class="font-semibold text-orange-800">🛠️ {{ translations.freelancer_tools or 'Freelancer Tools' }}</h3>
+          <ul class="text-sm text-orange-700 mt-2">
+            <li>• {{ translations.project_management or 'Project management features' }}</li>
+            <li>• {{ translations.client_billing or 'Client billing and invoicing tools' }}</li>
+            <li>• {{ translations.portfolio_showcase or 'Portfolio showcase capabilities' }}</li>
+          </ul>
+        </div>
+      {% elif persona == "entrepreneur" %}
+        <div class="bg-emerald-50 border-l-4 border-emerald-400 p-4 mt-4">
+          <h3 class="font-semibold text-emerald-800">🚀 {{ translations.entrepreneur_features or 'Entrepreneur Features' }}</h3>
+          <ul class="text-sm text-emerald-700 mt-2">
+            <li>• {{ translations.business_analytics or 'Business analytics and insights' }}</li>
+            <li>• {{ translations.team_management or 'Team management tools' }}</li>
+            <li>• {{ translations.growth_tracking or 'Growth tracking and metrics' }}</li>
+          </ul>
+        </div>
+      {% endif %}
+      
+      <h2 class="text-xl font-semibold text-gray-800 mt-6">💰 {{ translations.dynamic_pricing or 'Dynamic Pricing' }}</h2>
+      <p><strong>{{ translations.income_level or 'Income Level' }}:</strong> {{ context.income_level or "N/A" }}</p>
+      <p><strong>{{ translations.suggested_tier or 'Suggested Tier' }}:</strong> {{ context.tier_suggestion or "N/A" }}</p>
+      
+      <!-- 🎁 Automatically Assigned Package -->
+      {% if user.assigned_package %}
+      <div class="bg-green-50 border-2 border-green-500 p-4 rounded-lg mt-4">
+        <h3 class="font-bold text-green-800 text-lg">🎁 {{ translations.package_assigned or 'Package Automatically Assigned!' }}</h3>
+        <p class="text-green-700"><strong>{{ user.assigned_package.name }}</strong> - ${{ "%.2f"|format(user.assigned_package.price) }}/month</p>
+        <p class="text-sm text-green-600 mt-2">{{ translations.package_assigned_desc or 'Your package has been automatically assigned based on your profile analysis.' }}</p>
+        <div class="mt-3">
+          <a href="/packages/dashboard?username={{ user.username if user else 'unknown' }}" class="inline-block px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition text-sm">📦 {{ translations.manage_package or 'Manage Package' }}</a>
+        </div>
+      </div>
+      {% endif %}
+      
+      <!-- 🎯 Adaptive Pricing Display Based on Tier -->
+      {% if tier == "premium" %}
+        <div class="bg-emerald-50 border-2 border-emerald-500 p-4 rounded-lg mt-4">
+          <h3 class="font-bold text-emerald-800 text-lg">🌟 {{ translations.premium_plan_title or 'Premium Plan' }}</h3>
+          <p class="text-emerald-700">{{ translations.premium_plan_desc or 'All features unlocked • Priority support • Advanced analytics' }}</p>
+        </div>
+      {% elif tier == "student" %}
+        <div class="bg-blue-50 border-2 border-blue-500 p-4 rounded-lg mt-4">
+          <h3 class="font-bold text-blue-800 text-lg">📚 {{ translations.student_plan_title or 'Student Plan (70% OFF)' }}</h3>
+          <p class="text-blue-700">{{ translations.student_plan_desc or 'Student verification required • Basic features • Limited usage' }}</p>
+        </div>
+      {% elif tier == "fair" %}
+        <div class="bg-orange-50 border-2 border-orange-500 p-4 rounded-lg mt-4">
+          <h3 class="font-bold text-orange-800 text-lg">🌍 {{ translations.fair_plan_title or 'Fair Plan (50% OFF)' }}</h3>
+          <p class="text-orange-700">{{ translations.fair_plan_desc or 'Regional pricing • Core features • Community support' }}</p>
+        </div>
+      {% elif tier == "free" %}
+        <div class="bg-gray-50 border-2 border-gray-500 p-4 rounded-lg mt-4">
+          <h3 class="font-bold text-gray-800 text-lg">🎉 {{ translations.free_plan_title or 'Free Plan (100% OFF)' }}</h3>
+          <p class="text-gray-700">{{ translations.free_plan_desc or 'Basic features • Limited usage • Community support' }}</p>
+        </div>
+      {% else %}
+        <div class="bg-teal-50 border-2 border-teal-500 p-4 rounded-lg mt-4">
+          <h3 class="font-bold text-teal-800 text-lg">📋 {{ translations.standard_plan_title or 'Standard Plan' }}</h3>
+          <p class="text-teal-700">{{ translations.standard_plan_desc or 'All features • Standard support • Regular updates' }}</p>
+        </div>
+      {% endif %}
+      
+      <!-- 🌐 Bandwidth-Specific Features -->
+      {% if bandwidth == "low" %}
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">
+          <h3 class="font-semibold text-yellow-800">⚡ {{ translations.low_bandwidth_mode or 'Low Bandwidth Mode' }}</h3>
+          <p class="text-sm text-yellow-700">{{ translations.low_bandwidth_desc or 'Optimized for slower connections • Reduced media loading • Lightweight interface' }}</p>
+        </div>
+      {% elif bandwidth == "high" %}
+        <div class="bg-green-50 border-l-4 border-green-400 p-4 mt-4">
+          <h3 class="font-semibold text-green-800">🚀 {{ translations.high_performance_mode or 'High Performance Mode' }}</h3>
+          <p class="text-sm text-green-700">{{ translations.high_performance_desc or 'Full media experience • Real-time updates • Advanced animations' }}</p>
+        </div>
+      {% endif %}
+
+      <h2 class="text-xl font-semibold text-gray-800 mt-6">🌐 {{ translations.social_summary or 'Social Summary' }}</h2>
+      {% if context.social_data %}
+        <ul class="list-disc ml-5 text-sm text-gray-700">
+          {% for item in context.social_data %}
+            <li>
+              <strong>{{ item.source or translations.source or "Source" }}:</strong>
+              {{ item.firecrawl_ai_summary or translations.no_summary or "No summary available" }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>{{ translations.no_social_data or 'No social data was crawled.' }}</p>
+      {% endif %}
+    </div>
+
+    <!-- 🎯 Adaptive Call-to-Action Based on Tier -->
+    <div class="mt-8 space-y-4">
+      <!-- Marketplace Link -->
+      <div class="text-center">
+        <a href="/marketplace?username={{ user.username if user else 'unknown' }}" class="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-semibold">🛍️ {{ translations.browse_marketplace or 'Browse Marketplace' }}</a>
+        <p class="text-sm text-gray-600 mt-2">{{ translations.discover_products or 'Discover products with fair, context-aware pricing' }}</p>
+      </div>
+      
+      <!-- Tier-specific actions -->
+      {% if tier == "free" %}
+        <div class="text-center">
+          <a href="/upgrade" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-semibold">🚀 {{ translations.upgrade_premium or 'Upgrade to Premium' }}</a>
+          <p class="text-sm text-gray-600">{{ translations.unlock_features or 'Unlock all features and get priority support' }}</p>
+        </div>
+      {% elif tier == "student" %}
+        <div class="text-center">
+          <a href="/student-verification" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-semibold">📋 {{ translations.complete_verification or 'Complete Student Verification' }}</a>
+          <p class="text-sm text-gray-600">{{ translations.verify_student or 'Verify your student status to maintain discount' }}</p>
+        </div>
+      {% elif tier == "premium" %}
+        <div class="text-center">
+          <a href="/dashboard?username={{ user.username if user else 'unknown' }}" class="inline-block px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition font-semibold">🌟 {{ translations.access_premium_dashboard or 'Access Premium Dashboard' }}</a>
+          <p class="text-sm text-gray-600">{{ translations.explore_features or 'Explore advanced features and analytics' }}</p>
+        </div>
+      {% else %}
+        <div class="text-center">
+          <a href="/dashboard?username={{ user.username if user else 'unknown' }}" class="inline-block px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition font-semibold">📊 {{ translations.go_to_dashboard or 'Go to Dashboard' }}</a>
+          <p class="text-sm text-gray-600">{{ translations.start_exploring or 'Start exploring your personalized experience' }}</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- 🚪 Logout Button -->
+    <div class="mt-6">
+      <a href="/" class="inline-block px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition text-sm">🚪 {{ translations.logout or 'Logout' }}</a>
+    </div>
+    
+    <!-- Language switching JavaScript -->
+    <script>
+      function setLanguage(language) {
+        fetch('/set-language', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ language: language })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Reload page to apply new language
+            window.location.reload();
+          }
+        })
+        .catch(error => {
+          console.error('Error setting language:', error);
+        });
+      }
+    </script>
+    
+    <!-- 📱 Device-Specific Footer -->
+    {% if device_type == "mobile" %}
+      <div class="mt-6 text-xs text-gray-500">
+        <p>📱 {{ translations.mobile_optimized_exp or 'Mobile-optimized experience • Swipe-friendly interface' }}</p>
+      </div>
+    {% elif device_type == "desktop" %}
+      <div class="mt-6 text-xs text-gray-500">
+        <p>🖥️ {{ translations.desktop_full_exp or 'Full desktop experience • Keyboard shortcuts available' }}</p>
+      </div>
+    {% endif %}
   </div>
 </body>
 </html>

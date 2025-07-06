@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freelancer Dashboard - PayTosha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-900">PayTosha Freelancer</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/welcome?username={{ username }}" class="text-gray-600 hover:text-gray-900">Welcome</a>
+                    <a href="/packages/dashboard?username={{ username }}" class="text-gray-600 hover:text-gray-900">Packages</a>
+                    <a href="/packages/billing?username={{ username }}" class="text-gray-600 hover:text-gray-900">Billing</a>
+                    <a href="/" class="text-gray-600 hover:text-gray-900">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div x-data="freelancerDashboard()" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-full text-sm font-medium mb-4">
+                <i class="fas fa-briefcase mr-2"></i>
+                Freelancer Plan
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">🛠️ Freelancer Dashboard</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Manage your freelance projects, track earnings, and grow your business with our specialized tools.
+            </p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-orange-100 rounded-lg">
+                        <i class="fas fa-dollar-sign text-orange-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Monthly Earnings</p>
+                        <p class="text-2xl font-bold text-gray-900">$2,847</p>
+                        <p class="text-xs text-green-600">+15% this month</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-100 rounded-lg">
+                        <i class="fas fa-tasks text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Active Projects</p>
+                        <p class="text-2xl font-bold text-gray-900">7</p>
+                        <p class="text-xs text-blue-600">3 due this week</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-clock text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Hours Tracked</p>
+                        <p class="text-2xl font-bold text-gray-900">142</p>
+                        <p class="text-xs text-green-600">this month</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-purple-100 rounded-lg">
+                        <i class="fas fa-users text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Clients</p>
+                        <p class="text-2xl font-bold text-gray-900">12</p>
+                        <p class="text-xs text-purple-600">3 new this month</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column - Project Management -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Active Projects -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">📋 Active Projects</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-orange-50 rounded-lg border-l-4 border-orange-500">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900">E-commerce Website</h3>
+                                <p class="text-sm text-gray-600">Client: TechCorp Inc.</p>
+                                <p class="text-xs text-orange-600">Due: Dec 15, 2024</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">$1,200</p>
+                                <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">In Progress</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900">Mobile App Design</h3>
+                                <p class="text-sm text-gray-600">Client: StartupXYZ</p>
+                                <p class="text-xs text-blue-600">Due: Dec 20, 2024</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">$800</p>
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Design Phase</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900">Content Management System</h3>
+                                <p class="text-sm text-gray-600">Client: MediaCorp</p>
+                                <p class="text-xs text-green-600">Due: Dec 25, 2024</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">$1,500</p>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Development</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Tracking -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">⏱️ Time Tracking</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-orange-900 mb-2">Today's Hours</h3>
+                            <div class="text-center">
+                                <p class="text-3xl font-bold text-orange-600">6.5</p>
+                                <p class="text-sm text-orange-700">hours worked</p>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-blue-900 mb-2">This Week</h3>
+                            <div class="text-center">
+                                <p class="text-3xl font-bold text-blue-600">32</p>
+                                <p class="text-sm text-blue-700">hours tracked</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Invoices -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">💰 Recent Invoices</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-semibold text-gray-900">Invoice #2024-001</p>
+                                <p class="text-sm text-gray-600">TechCorp Inc. - Website Design</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">$1,200</p>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Paid</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-semibold text-gray-900">Invoice #2024-002</p>
+                                <p class="text-sm text-gray-600">StartupXYZ - App Development</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">$800</p>
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Pending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Quick Actions & Tools -->
+            <div class="space-y-8">
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">⚡ Quick Actions</h2>
+                    <div class="space-y-3">
+                        <a href="/packages/dashboard?username={{ username }}" class="block w-full bg-blue-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-blue-700 transition">
+                            <i class="fas fa-cog mr-2"></i>Manage Package
+                        </a>
+                        <a href="/packages/billing?username={{ username }}" class="block w-full bg-gray-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-gray-700 transition">
+                            <i class="fas fa-credit-card mr-2"></i>Billing & Invoices
+                        </a>
+                        <button class="block w-full bg-green-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-green-700 transition">
+                            <i class="fas fa-plus mr-2"></i>New Project
+                        </button>
+                        <button class="block w-full bg-orange-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-orange-700 transition">
+                            <i class="fas fa-clock mr-2"></i>Start Timer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Freelancer Tools -->
+                <div class="bg-gradient-to-br from-orange-600 to-red-600 text-white rounded-lg p-6">
+                    <h2 class="text-xl font-bold mb-4">🛠️ Freelancer Tools</h2>
+                    <p class="text-orange-100 mb-4">Access specialized tools for freelancers and contractors.</p>
+                    <div class="space-y-3">
+                        <button class="block w-full bg-white text-orange-600 py-3 px-4 rounded-lg text-center font-semibold hover:bg-orange-50 transition">
+                            <i class="fas fa-file-invoice mr-2"></i>Create Invoice
+                        </button>
+                        <button class="block w-full bg-white bg-opacity-20 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-opacity-30 transition">
+                            <i class="fas fa-chart-line mr-2"></i>Earnings Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Freelancer Features -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">🛠️ Freelancer Features</h2>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Project management tools
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Time tracking
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Invoice generation
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Client management
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Portfolio showcase
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Payment processing
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Email support
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function freelancerDashboard() {
+            return {
+                // Freelancer dashboard functionality
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Package Comparison - PayTosha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .comparison-table th {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+        .feature-row:hover {
+            background-color: #f8fafc;
+        }
+        .check-mark {
+            color: #10b981;
+        }
+        .x-mark {
+            color: #ef4444;
+        }
+        .dash-mark {
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-900">PayTosha</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/welcome" class="text-gray-600 hover:text-gray-900">Dashboard</a>
+                    <a href="/packages/dashboard" class="text-gray-600 hover:text-gray-900">Packages</a>
+                    <a href="/packages/compare" class="text-blue-600 font-medium">Compare</a>
+                    <a href="/packages/billing" class="text-gray-600 hover:text-gray-900">Billing</a>
+                    <a href="/logout" class="text-gray-600 hover:text-gray-900">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div x-data="packageComparison()" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Compare Plans</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Find the perfect plan by comparing features, limits, and pricing across all our packages.
+            </p>
+        </div>
+
+        <!-- Current Plan Banner -->
+        {% if comparison.current_package %}
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold">Your Current Plan</h3>
+                    <p class="text-blue-100">
+                        You're currently on the <strong>{{ comparison.current_package.name }}</strong> plan
+                    </p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-blue-100">${{ "%.2f"|format(comparison.current_package.price) }}/month</p>
+                    <a href="/packages/dashboard" class="mt-2 bg-white text-blue-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-50">
+                        Manage Plan
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Package Comparison Table -->
+        <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full comparison-table">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="p-6 text-left bg-gray-50 font-semibold text-gray-900 min-w-[200px]">
+                                Features
+                            </th>
+                            {% for package in comparison.available_packages %}
+                            <th class="p-6 text-center bg-gray-50 font-semibold text-gray-900 min-w-[200px]">
+                                <div class="mb-2">
+                                    <h3 class="text-lg font-bold">{{ package.name }}</h3>
+                                    <div class="text-2xl font-bold text-blue-600">
+                                        ${{ "%.2f"|format(package.price) }}
+                                    </div>
+                                    <div class="text-sm text-gray-600">per month</div>
+                                </div>
+                                {% if package.id in comparison.current_package.id %}
+                                <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                    Current
+                                </span>
+                                {% else %}
+                                <button @click="subscribeToPackage('{{ package.id }}')" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                                    Choose Plan
+                                </button>
+                                {% endif %}
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Pricing Row -->
+                        <tr class="border-b feature-row">
+                            <td class="p-6 font-semibold text-gray-900">Pricing</td>
+                            {% for package in comparison.available_packages %}
+                            <td class="p-6 text-center">
+                                <div class="mb-2">
+                                    <span class="text-2xl font-bold">${{ "%.2f"|format(package.price) }}</span>
+                                    {% if package.discount_percentage > 0 %}
+                                    <div class="text-sm text-gray-500 line-through">${{ "%.2f"|format(package.original_price) }}</div>
+                                    <div class="text-sm text-green-600 font-semibold">{{ package.discount_percentage }}% OFF</div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- Storage Row -->
+                        <tr class="border-b feature-row">
+                            <td class="p-6 font-semibold text-gray-900">Storage</td>
+                            {% for package in comparison.available_packages %}
+                            <td class="p-6 text-center">
+                                <span class="text-lg font-semibold">{{ package.storage_limit_gb }} GB</span>
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- API Calls Row -->
+                        <tr class="border-b feature-row">
+                            <td class="p-6 font-semibold text-gray-900">API Calls per Month</td>
+                            {% for package in comparison.available_packages %}
+                            <td class="p-6 text-center">
+                                {% if package.api_calls_per_month >= 999999 %}
+                                <span class="text-lg font-semibold text-green-600">Unlimited</span>
+                                {% else %}
+                                <span class="text-lg font-semibold">{{ "{:,}".format(package.api_calls_per_month) }}</span>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- Team Members Row -->
+                        <tr class="border-b feature-row">
+                            <td class="p-6 font-semibold text-gray-900">Team Members</td>
+                            {% for package in comparison.available_packages %}
+                            <td class="p-6 text-center">
+                                <span class="text-lg font-semibold">{{ package.max_users }}</span>
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- Support Level Row -->
+                        <tr class="border-b feature-row">
+                            <td class="p-6 font-semibold text-gray-900">Support Level</td>
+                            {% for package in comparison.available_packages %}
+                            <td class="p-6 text-center">
+                                <span class="text-lg font-semibold">{{ package.support_level.title() }}</span>
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- Features Section -->
+                        <tr class="border-b">
+                            <td class="p-6 font-bold text-gray-900 text-lg" colspan="{{ comparison.available_packages|length + 1 }}">
+                                Features
+                            </td>
+                        </tr>
+
+                        <!-- Dynamic Features -->
+                        {% set all_features = [] %}
+                        {% for package in comparison.available_packages %}
+                            {% for feature in package.features %}
+                                {% if feature not in all_features %}
+                                    {% set _ = all_features.append(feature) %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+
+                        {% for feature in all_features %}
+                        <tr class="border-b feature-row">
+                            <td class="p-6 text-gray-700">{{ feature }}</td>
+                            {% for package in comparison.available_packages %}
+                            <td class="p-6 text-center">
+                                {% if feature in package.features %}
+                                <i class="fas fa-check check-mark text-xl"></i>
+                                {% else %}
+                                <i class="fas fa-times x-mark text-xl"></i>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+
+                        <!-- Upgrade Path Section -->
+                        {% if comparison.upgrade_path %}
+                        <tr class="border-b">
+                            <td class="p-6 font-bold text-gray-900 text-lg" colspan="{{ comparison.available_packages|length + 1 }}">
+                                Upgrade Path
+                            </td>
+                        </tr>
+                        <tr class="border-b feature-row">
+                            <td class="p-6 text-gray-700">Recommended Next Step</td>
+                            {% for package in comparison.available_packages %}
+                            <td class="p-6 text-center">
+                                {% if package.id == comparison.recommended_package.id %}
+                                <div class="bg-green-100 text-green-800 px-3 py-2 rounded-lg">
+                                    <i class="fas fa-star text-yellow-500"></i>
+                                    <span class="font-semibold">Recommended</span>
+                                </div>
+                                {% else %}
+                                <span class="text-gray-400">-</span>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-8 text-center">
+            <a href="/packages/dashboard" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 mr-4">
+                Back to Packages
+            </a>
+            <a href="/packages/billing" class="bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700">
+                View Billing
+            </a>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="mt-16">
+            <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">Frequently Asked Questions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-lg p-6 shadow-sm border">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Can I change my plan anytime?</h3>
+                    <p class="text-gray-600">Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.</p>
+                </div>
+                <div class="bg-white rounded-lg p-6 shadow-sm border">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">What happens if I exceed my limits?</h3>
+                    <p class="text-gray-600">You'll receive notifications when approaching limits. Exceeding limits may result in temporary restrictions or additional charges.</p>
+                </div>
+                <div class="bg-white rounded-lg p-6 shadow-sm border">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Is there a free trial?</h3>
+                    <p class="text-gray-600">Yes, all paid plans come with a 14-day free trial. No credit card required to start.</p>
+                </div>
+                <div class="bg-white rounded-lg p-6 shadow-sm border">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">How do I cancel my subscription?</h3>
+                    <p class="text-gray-600">You can cancel anytime from your billing dashboard. Your access will continue until the end of your current billing period.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div x-show="loading" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span class="ml-3 text-gray-700">Processing...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function packageComparison() {
+            return {
+                loading: false,
+                
+                async subscribeToPackage(packageId) {
+                    this.loading = true;
+                    try {
+                        const response = await fetch('/packages/subscribe', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                package_id: packageId,
+                                payment_method: 'stripe'
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const result = await response.json();
+                            alert('Subscription created successfully!');
+                            window.location.reload();
+                        } else {
+                            const error = await response.json();
+                            alert('Error: ' + error.detail);
+                        }
+                    } catch (error) {
+                        alert('Error: ' + error.message);
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html> 

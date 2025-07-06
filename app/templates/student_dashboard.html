@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - PayTosha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-900">PayTosha Student</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/welcome?username={{ username }}" class="text-gray-600 hover:text-gray-900">Welcome</a>
+                    <a href="/packages/dashboard?username={{ username }}" class="text-gray-600 hover:text-gray-900">Packages</a>
+                    <a href="/packages/billing?username={{ username }}" class="text-gray-600 hover:text-gray-900">Billing</a>
+                    <a href="/" class="text-gray-600 hover:text-gray-900">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div x-data="studentDashboard()" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full text-sm font-medium mb-4">
+                <i class="fas fa-graduation-cap mr-2"></i>
+                Student Plan - 70% OFF
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">📚 Student Dashboard</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Welcome to your student experience! Access educational resources and tools at special student pricing.
+            </p>
+        </div>
+
+        <!-- Student Verification Banner -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-4"></i>
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-yellow-800">Student Verification Required</h3>
+                    <p class="text-yellow-700">Please verify your student status to maintain your 70% discount.</p>
+                </div>
+                <button class="bg-yellow-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-yellow-700 transition">
+                    Verify Now
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-100 rounded-lg">
+                        <i class="fas fa-book text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Projects</p>
+                        <p class="text-2xl font-bold text-gray-900">3</p>
+                        <p class="text-xs text-blue-600">of 5 allowed</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-code text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">API Calls</p>
+                        <p class="text-2xl font-bold text-gray-900">847</p>
+                        <p class="text-xs text-green-600">of 1000/month</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-purple-100 rounded-lg">
+                        <i class="fas fa-database text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Storage</p>
+                        <p class="text-2xl font-bold text-gray-900">2.3 GB</p>
+                        <p class="text-xs text-purple-600">of 10 GB</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-orange-100 rounded-lg">
+                        <i class="fas fa-dollar-sign text-orange-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Monthly Cost</p>
+                        <p class="text-2xl font-bold text-gray-900">$9.99</p>
+                        <p class="text-xs text-orange-600">70% off $29.99</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column - Educational Content -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Educational Resources -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">📖 Educational Resources</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-blue-900 mb-2">Tutorials</h3>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex items-center">
+                                    <i class="fas fa-play text-blue-600 mr-2"></i>
+                                    Getting Started Guide
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-play text-blue-600 mr-2"></i>
+                                    API Integration Basics
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-play text-blue-600 mr-2"></i>
+                                    Advanced Features
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-green-900 mb-2">Documentation</h3>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex items-center">
+                                    <i class="fas fa-file-alt text-green-600 mr-2"></i>
+                                    API Reference
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-file-alt text-green-600 mr-2"></i>
+                                    Best Practices
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-file-alt text-green-600 mr-2"></i>
+                                    Code Examples
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Projects -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">🎓 Student Projects</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Personal Portfolio</h3>
+                                <p class="text-sm text-gray-600">Web development project</p>
+                            </div>
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Active</span>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Data Analysis Tool</h3>
+                                <p class="text-sm text-gray-600">Python/ML project</p>
+                            </div>
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Active</span>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Mobile App</h3>
+                                <p class="text-sm text-gray-600">React Native project</p>
+                            </div>
+                            <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">Planning</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Learning Progress -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">📈 Learning Progress</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>API Usage</span>
+                                <span>84.7%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: 84.7%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Storage Usage</span>
+                                <span>23%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-600 h-2 rounded-full" style="width: 23%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Projects Completed</span>
+                                <span>60%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-purple-600 h-2 rounded-full" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Quick Actions & Support -->
+            <div class="space-y-8">
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">⚡ Quick Actions</h2>
+                    <div class="space-y-3">
+                        <a href="/packages/dashboard?username={{ username }}" class="block w-full bg-blue-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-blue-700 transition">
+                            <i class="fas fa-cog mr-2"></i>Manage Package
+                        </a>
+                        <a href="/packages/billing?username={{ username }}" class="block w-full bg-gray-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-gray-700 transition">
+                            <i class="fas fa-credit-card mr-2"></i>Billing & Invoices
+                        </a>
+                        <button class="block w-full bg-green-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-green-700 transition">
+                            <i class="fas fa-download mr-2"></i>Download Resources
+                        </button>
+                        <button class="block w-full bg-purple-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-purple-700 transition">
+                            <i class="fas fa-certificate mr-2"></i>Get Certificate
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Student Support -->
+                <div class="bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-lg p-6">
+                    <h2 class="text-xl font-bold mb-4">🎓 Student Support</h2>
+                    <p class="text-blue-100 mb-4">Get help with your educational projects and learning journey.</p>
+                    <div class="space-y-3">
+                        <button class="block w-full bg-white text-blue-600 py-3 px-4 rounded-lg text-center font-semibold hover:bg-blue-50 transition">
+                            <i class="fas fa-question-circle mr-2"></i>Ask Questions
+                        </button>
+                        <button class="block w-full bg-white bg-opacity-20 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-opacity-30 transition">
+                            <i class="fas fa-users mr-2"></i>Student Community
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Student Features -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">📚 Student Features</h2>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            70% discount on all plans
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            5 active projects
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            1000 API calls/month
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            10 GB storage
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Educational resources
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Student community access
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Email support
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function studentDashboard() {
+            return {
+                // Student dashboard functionality
+            }
+        }
+    </script>
+</body>
+</html> 

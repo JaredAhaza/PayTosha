@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="{{ user_language or 'en' }}">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ translations.paytosha_title or 'PayTosha' }} | {{ translations.register or 'Register' }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/static/location.js"></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  
+  <!-- 🌐 Language Selector -->
+  <div x-data="{ language: '{{ user_language or 'en' }}' }" class="absolute top-4 right-4">
+    <div class="flex items-center space-x-2">
+      <span class="text-sm font-medium text-gray-700">🌐</span>
+      <select x-model="language" @change="setLanguage(language)" class="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+        <option value="en" :selected="language === 'en'">English</option>
+        <option value="sw" :selected="language === 'sw'">Kiswahili</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+    <h2 class="text-2xl font-bold mb-6 text-center text-teal-700" id="join-title">Join PayTosha</h2>
+
+    <form id="user-form" class="space-y-4">
+      <input type="text" name="first_name" placeholder="First Name" required class="w-full p-2 border rounded" />
+      <input type="text" name="last_name" placeholder="Last Name" required class="w-full p-2 border rounded" />
+      <input type="text" name="username" placeholder="Username" required class="w-full p-2 border rounded" />
+      <input type="email" name="email" placeholder="Email" required class="w-full p-2 border rounded" />
+      <div class="relative">
+        <input type="password" name="password" id="password" placeholder="Password (min 8 characters)" required class="w-full p-2 pr-10 border rounded" />
+        <button type="button" id="toggle-password" class="absolute right-2 top-2 text-gray-500 hover:text-gray-700">👁️</button>
+      </div>
+      <div id="password-strength" class="text-xs text-gray-600 mt-1"></div>
+      <div class="text-xs text-gray-500 mt-1">
+        <p id="password-requirements">Password must contain:</p>
+        <ul class="list-disc ml-4">
+          <li>At least 8 characters</li>
+          <li>One uppercase letter</li>
+          <li>One lowercase letter</li>
+          <li>One number</li>
+          <li>One special character (!@#$%^&*)</li>
+        </ul>
+      </div>
+      <div class="relative">
+        <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" required class="w-full p-2 pr-10 border rounded" />
+        <button type="button" id="toggle-confirm-password" class="absolute right-2 top-2 text-gray-500 hover:text-gray-700">👁️</button>
+      </div>
+      <div id="password-match" class="text-sm hidden"></div>
+
+      <!-- Optional Socials -->
+      <input type="url" name="linkedin_url" placeholder="LinkedIn URL (optional)" class="w-full p-2 border rounded" />
+      <input type="url" name="x_url" placeholder="X / Twitter URL (optional)" class="w-full p-2 border rounded" />
+      <input type="url" name="facebook_url" placeholder="Facebook URL (optional)" class="w-full p-2 border rounded" />
+      <input type="url" name="github_url" placeholder="GitHub URL (optional)" class="w-full p-2 border rounded" />
+      <input type="url" name="personal_website" placeholder="Personal Website (optional)" class="w-full p-2 border rounded" />
+
+      <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded hover:bg-teal-700 transition" id="create-btn">Create Account</button>
+    </form>
+
+    <div class="mt-4 text-center text-sm">
+      <p id="have-account">Already have an account? <a href="/login" class="text-teal-600 hover:underline" id="sign-in-link">Sign In</a></p>
+    </div>
+
+    <div id="message" class="mt-4 text-center text-sm"></div>
+  </div>
+
+  <script>
+    // Password validation
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const passwordMatch = document.getElementById('password-match');
+    const passwordStrength = document.getElementById('password-strength');
+    const submitButton = document.querySelector('button[type="submit"]');
+
+    function checkPasswordStrength(password) {
+      let strength = 0;
+      let feedback = [];
+      
+      if (password.length >= 8) strength++;
+      else feedback.push('At least 8 characters');
+      
+      if (/[a-z]/.test(password)) strength++;
+      else feedback.push('Lowercase letter');
+      
+      if (/[A-Z]/.test(password)) strength++;
+      else feedback.push('Uppercase letter');
+      
+      if (/[0-9]/.test(password)) strength++;
+      else feedback.push('Number');
+      
+      if (/[^A-Za-z0-9]/.test(password)) strength++;
+      else feedback.push('Special character');
+      
+      return { strength, feedback };
+    }
+
+    function validatePasswords() {
+      const passwordValue = password.value;
+      const confirmValue = confirmPassword.value;
+      
+      // Check password strength
+      const strengthCheck = checkPasswordStrength(passwordValue);
+      let strengthText = '';
+      let strengthColor = '';
+      
+      if (passwordValue.length > 0) {
+        if (strengthCheck.strength >= 4) {
+          strengthText = '✅ Strong password';
+          strengthColor = 'text-green-600';
+        } else if (strengthCheck.strength >= 3) {
+          strengthText = '⚠️ Medium strength';
+          strengthColor = 'text-yellow-600';
+        } else {
+          strengthText = '❌ Weak password';
+          strengthColor = 'text-red-600';
+        }
+        
+        if (strengthCheck.feedback.length > 0) {
+          strengthText += ` (Add: ${strengthCheck.feedback.slice(0, 2).join(', ')})`;
+        }
+        
+        passwordStrength.textContent = strengthText;
+        passwordStrength.className = `text-xs ${strengthColor} mt-1`;
+      } else {
+        passwordStrength.textContent = '';
+      }
+      
+      // Check password match
+      if (confirmValue === '') {
+        passwordMatch.classList.add('hidden');
+        return passwordValue.length >= 8 && strengthCheck.strength >= 3;
+      }
+      
+      if (passwordValue === confirmValue && passwordValue.length >= 8 && strengthCheck.strength >= 3) {
+        passwordMatch.textContent = '✅ Passwords match';
+        passwordMatch.className = 'text-sm text-green-600';
+        passwordMatch.classList.remove('hidden');
+        submitButton.disabled = false;
+        submitButton.className = 'w-full bg-teal-600 text-white py-2 rounded hover:bg-teal-700 transition';
+        return true;
+      } else {
+        if (passwordValue !== confirmValue) {
+          passwordMatch.textContent = '❌ Passwords do not match';
+        } else if (passwordValue.length < 8) {
+          passwordMatch.textContent = '❌ Password too short (min 8 characters)';
+        } else {
+          passwordMatch.textContent = '❌ Password too weak';
+        }
+        passwordMatch.className = 'text-sm text-red-600';
+        passwordMatch.classList.remove('hidden');
+        submitButton.disabled = true;
+        submitButton.className = 'w-full bg-gray-400 text-white py-2 rounded cursor-not-allowed';
+        return false;
+      }
+    }
+
+    // Add event listeners for real-time password validation
+    password.addEventListener('input', validatePasswords);
+    confirmPassword.addEventListener('input', validatePasswords);
+
+    // Password visibility toggle
+    const togglePassword = document.getElementById('toggle-password');
+    const toggleConfirmPassword = document.getElementById('toggle-confirm-password');
+
+    togglePassword.addEventListener('click', () => {
+      const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+      password.setAttribute('type', type);
+      togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+    });
+
+    toggleConfirmPassword.addEventListener('click', () => {
+      const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+      confirmPassword.setAttribute('type', type);
+      toggleConfirmPassword.textContent = type === 'password' ? '👁️' : '🙈';
+    });
+
+    // Form submission with password validation
+    document.getElementById("user-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      // Check if passwords match
+      if (!validatePasswords()) {
+        return;
+      }
+      
+      const form = e.target;
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      // Remove confirm_password from data before sending
+      delete data.confirm_password;
+
+      Object.keys(data).forEach(key => {
+        if (data[key].trim() === "") delete data[key];
+      });
+
+      const msgBox = document.getElementById("message");
+
+      try {
+        const res = await fetch("/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+          window.location.href = `/welcome?username=${data.username}`;
+        }
+        else {
+          const err = await res.json();
+          msgBox.textContent = `❌ ${err.detail}`;
+          msgBox.className = "text-red-600";
+        }
+      } catch (err) {
+        msgBox.textContent = "❌ {{ translations.error or 'Failed to reach server.' }}";
+        msgBox.className = "text-red-600";
+      }
+    });
+
+    // Store original English text
+    const originalTexts = {
+      'join-title': 'Join PayTosha',
+      'create-btn': 'Create Account',
+      'password-requirements': 'Password must contain:',
+      'have-account': 'Already have an account?',
+      'sign-in-link': 'Sign In'
+    };
+
+    async function translateText(text, targetLanguage) {
+      if (targetLanguage === 'en') return text;
+      
+      try {
+        const response = await fetch('/translate-text', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            text: text, 
+            target_language: targetLanguage,
+            source_language: 'en'
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          return data.translated_text || text;
+        }
+      } catch (error) {
+        console.error('Translation error:', error);
+      }
+      
+      return text;
+    }
+
+    async function translatePage(language) {
+      if (language === 'en') {
+        // Restore original English text
+        document.getElementById('join-title').textContent = originalTexts['join-title'];
+        document.getElementById('create-btn').textContent = originalTexts['create-btn'];
+        document.getElementById('password-requirements').textContent = originalTexts['password-requirements'];
+        document.getElementById('have-account').textContent = originalTexts['have-account'];
+        document.getElementById('sign-in-link').textContent = originalTexts['sign-in-link'];
+        return;
+      }
+
+      // Translate each element
+      for (const [id, originalText] of Object.entries(originalTexts)) {
+        const element = document.getElementById(id);
+        if (element) {
+          const translatedText = await translateText(originalText, language);
+          element.textContent = translatedText;
+        }
+      }
+    }
+
+    // Language switching JavaScript
+    function setLanguage(language) {
+      // First translate the page content
+      translatePage(language);
+      
+      // Then save the language preference
+      fetch('/set-language', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ language: language })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log('Language preference saved');
+        }
+      })
+      .catch(error => {
+        console.error('Error setting language:', error);
+      });
+    }
+
+    // Translate page on load if language is not English
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentLanguage = '{{ user_language or "en" }}';
+      if (currentLanguage !== 'en') {
+        translatePage(currentLanguage);
+      }
+    });
+  </script>
+</body>
+</html>

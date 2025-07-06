@@ -2,12 +2,12 @@
 <html lang="{{ user_language or 'en' }}">
 <head>
   <meta charset="UTF-8">
-  <title>{{ translations.welcome or 'Welcome' }} to {{ translations.paytosha_title or 'PayTosha' }}</title>
+  <title>{{ translations.login or 'Login' }} | {{ translations.paytosha_title or 'PayTosha' }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body class="bg-gray-50 flex items-center justify-center min-h-screen">
-
+  
   <!-- 🌐 Language Selector -->
   <div x-data="{ language: '{{ user_language or 'en' }}' }" class="absolute top-4 right-4">
     <div class="flex items-center space-x-2">
@@ -19,26 +19,59 @@
     </div>
   </div>
 
-  <div class="text-center max-w-xl p-10 bg-white rounded-2xl shadow-xl">
-    <h1 class="text-4xl font-bold text-teal-600 mb-4" id="welcome-title">Welcome to PayTosha</h1>
-    <p class="text-gray-600 mb-6 text-lg" id="tagline">
-      Empowering fair, adaptive pricing for everyone. Software that fits you — not the other way around.
-    </p>
+  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+    <h2 class="text-2xl font-bold mb-6 text-center text-teal-700" id="welcome-back">Welcome Back 👋</h2>
 
-    <div class="flex justify-center gap-6">
-      <a href="/login" class="bg-teal-600 text-white px-6 py-2 rounded hover:bg-teal-700 transition" id="login-btn">Login</a>
-      <a href="/register" class="border border-teal-600 text-teal-600 px-6 py-2 rounded hover:bg-teal-100 transition" id="register-btn">New User? Register</a>
+    <form id="login-form" class="space-y-4">
+      <input type="email" name="email" placeholder="Email" required class="w-full p-2 border rounded" />
+      <input type="password" name="password" placeholder="Password" required class="w-full p-2 border rounded" />
+
+      <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded hover:bg-teal-700 transition" id="login-btn">Login</button>
+    </form>
+
+    <div class="mt-4 text-center text-sm">
+      <p id="no-account">Don't have an account? <a href="/register" class="text-teal-600 hover:underline" id="sign-up-link">Sign Up</a></p>
     </div>
+
+    <div id="message" class="mt-4 text-center text-sm"></div>
   </div>
 
-  <!-- Language switching JavaScript -->
   <script>
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      const msgBox = document.getElementById("message");
+
+      try {
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+          const responseData = await res.json();
+          window.location.href = `/welcome?username=${responseData.user.username}`;
+        }
+        else {
+          const err = await res.json();
+          msgBox.textContent = `❌ ${err.detail}`;
+          msgBox.className = "text-red-600";
+        }
+      } catch (err) {
+        msgBox.textContent = "❌ {{ translations.error or 'Server error' }}";
+        msgBox.className = "text-red-600";
+      }
+    });
+
     // Store original English text
     const originalTexts = {
-      'welcome-title': 'Welcome to PayTosha',
-      'tagline': 'Empowering fair, adaptive pricing for everyone. Software that fits you — not the other way around.',
+      'welcome-back': 'Welcome Back 👋',
       'login-btn': 'Login',
-      'register-btn': 'New User? Register'
+      'no-account': 'Don\'t have an account?',
+      'sign-up-link': 'Sign Up'
     };
 
     async function translateText(text, targetLanguage) {
@@ -71,10 +104,10 @@
     async function translatePage(language) {
       if (language === 'en') {
         // Restore original English text
-        document.getElementById('welcome-title').textContent = originalTexts['welcome-title'];
-        document.getElementById('tagline').textContent = originalTexts['tagline'];
+        document.getElementById('welcome-back').textContent = originalTexts['welcome-back'];
         document.getElementById('login-btn').textContent = originalTexts['login-btn'];
-        document.getElementById('register-btn').textContent = originalTexts['register-btn'];
+        document.getElementById('no-account').textContent = originalTexts['no-account'];
+        document.getElementById('sign-up-link').textContent = originalTexts['sign-up-link'];
         return;
       }
 
@@ -88,6 +121,7 @@
       }
     }
 
+    // Language switching JavaScript
     function setLanguage(language) {
       // First translate the page content
       translatePage(language);
@@ -119,6 +153,5 @@
       }
     });
   </script>
-
 </body>
 </html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - PayTosha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-900">PayTosha</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/welcome?username={{ username }}" class="text-gray-600 hover:text-gray-900">Welcome</a>
+                    <a href="/packages/dashboard?username={{ username }}" class="text-gray-600 hover:text-gray-900">Packages</a>
+                    <a href="/packages/billing?username={{ username }}" class="text-gray-600 hover:text-gray-900">Billing</a>
+                    <a href="/" class="text-gray-600 hover:text-gray-900">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div x-data="defaultDashboard()" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-teal-600 to-blue-600 text-white rounded-full text-sm font-medium mb-4">
+                <i class="fas fa-user mr-2"></i>
+                Welcome Back
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">📊 Your Dashboard</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Welcome to your personalized dashboard! Here's an overview of your account and activities.
+            </p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-100 rounded-lg">
+                        <i class="fas fa-chart-bar text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">API Calls</p>
+                        <p class="text-2xl font-bold text-gray-900">1,247</p>
+                        <p class="text-xs text-blue-600">of 25,000/month</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-database text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Storage Used</p>
+                        <p class="text-2xl font-bold text-gray-900">45 GB</p>
+                        <p class="text-xs text-green-600">of 100 GB</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-purple-100 rounded-lg">
+                        <i class="fas fa-users text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Team Members</p>
+                        <p class="text-2xl font-bold text-gray-900">3</p>
+                        <p class="text-xs text-purple-600">of 5 slots</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-orange-100 rounded-lg">
+                        <i class="fas fa-calendar text-orange-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Days Active</p>
+                        <p class="text-2xl font-bold text-gray-900">28</p>
+                        <p class="text-xs text-orange-600">this month</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column - Main Content -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">📝 Recent Activity</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center p-3 bg-blue-50 rounded-lg">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">New API endpoint accessed</p>
+                                <p class="text-xs text-gray-500">2 hours ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                            <div class="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">File uploaded successfully</p>
+                                <p class="text-xs text-gray-500">1 day ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center p-3 bg-purple-50 rounded-lg">
+                            <div class="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">Team member invited</p>
+                                <p class="text-xs text-gray-500">3 days ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Usage Overview -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">📈 Usage Overview</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-blue-900 mb-2">API Usage</h3>
+                            <div class="h-32 bg-white rounded flex items-center justify-center">
+                                <p class="text-gray-500">📊 Chart Placeholder</p>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-green-900 mb-2">Storage Usage</h3>
+                            <div class="h-32 bg-white rounded flex items-center justify-center">
+                                <p class="text-gray-500">💾 Chart Placeholder</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Tips -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">💡 Quick Tips</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-gray-900 mb-2">Getting Started</h3>
+                            <p class="text-sm text-gray-600">Explore our documentation to learn how to use our features effectively.</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-gray-900 mb-2">Best Practices</h3>
+                            <p class="text-sm text-gray-600">Follow our guidelines to optimize your usage and performance.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Quick Actions & Info -->
+            <div class="space-y-8">
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">⚡ Quick Actions</h2>
+                    <div class="space-y-3">
+                        <a href="/packages/dashboard?username={{ username }}" class="block w-full bg-blue-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-blue-700 transition">
+                            <i class="fas fa-cog mr-2"></i>Manage Package
+                        </a>
+                        <a href="/packages/billing?username={{ username }}" class="block w-full bg-gray-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-gray-700 transition">
+                            <i class="fas fa-credit-card mr-2"></i>Billing & Invoices
+                        </a>
+                        <button class="block w-full bg-green-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-green-700 transition">
+                            <i class="fas fa-plus mr-2"></i>Create Project
+                        </button>
+                        <button class="block w-full bg-purple-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-purple-700 transition">
+                            <i class="fas fa-users mr-2"></i>Invite Team
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Account Info -->
+                <div class="bg-gradient-to-br from-teal-600 to-blue-600 text-white rounded-lg p-6">
+                    <h2 class="text-xl font-bold mb-4">👤 Account Info</h2>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-teal-100">Plan:</span>
+                            <span class="font-semibold">Standard</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-teal-100">Status:</span>
+                            <span class="font-semibold">Active</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-teal-100">Next Billing:</span>
+                            <span class="font-semibold">Jan 15, 2025</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Standard Features -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">📋 Standard Features</h2>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            All core features
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Standard support
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Regular updates
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Unlimited projects
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            25,000 API calls/month
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            100 GB storage
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Up to 5 team members
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function defaultDashboard() {
+            return {
+                // Default dashboard functionality
+            }
+        }
+    </script>
+</body>
+</html> 
