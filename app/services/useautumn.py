@@ -11,43 +11,6 @@ class UseAutumnService:
         self.base_url = os.getenv("USEAUTUMN_BASE_URL", "https://api.useautumn.com/v1")
         self.session = None
         
-        # PayTosha product configurations
-        self.products = {
-            "free_plan": {
-                "id": "free_plan",
-                "name": "Free Plan",
-                "price": 0,
-                "features": ["basic_marketplace", "limited_crawls", "basic_analytics"],
-                "limits": {
-                    "crawls_per_month": 10,
-                    "products_listed": 5,
-                    "analytics_views": 100
-                }
-            },
-            "fair_plan": {
-                "id": "fair_plan", 
-                "name": "Fair Plan",
-                "price": 9.99,
-                "features": ["marketplace", "social_crawls", "advanced_analytics", "fair_pricing"],
-                "limits": {
-                    "crawls_per_month": 100,
-                    "products_listed": 50,
-                    "analytics_views": 1000
-                }
-            },
-            "premium_plan": {
-                "id": "premium_plan",
-                "name": "Premium Plan", 
-                "price": 29.99,
-                "features": ["unlimited_marketplace", "unlimited_crawls", "premium_analytics", "priority_support"],
-                "limits": {
-                    "crawls_per_month": -1,  # Unlimited
-                    "products_listed": -1,   # Unlimited
-                    "analytics_views": -1    # Unlimited
-                }
-            }
-        }
-    
     async def _get_session(self):
         """Get or create aiohttp session"""
         if self.session is None or self.session.closed:
@@ -282,9 +245,26 @@ class UseAutumnService:
         # Default to fair plan for most users
         return "fair_plan"
     
-    def get_plan_features(self, plan_id: str) -> Dict[str, Any]:
-        """Get features and limits for a specific plan"""
-        return self.products.get(plan_id, self.products["free_plan"])
+    async def fetch_products(self) -> List[Dict[str, Any]]:
+        """Fetch available products/plans from UseAutumn API"""
+        try:
+            if self.api_key == "your_useautumn_api_key_here" or not self.api_key:
+                print(f"🔧 Mock mode: Returning empty product list")
+                return []
+            session = await self._get_session()
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
+            async with session.get(f"{self.base_url}/plans", headers=headers) as response:
+                if response.status == 200:
+                    return await response.json()
+                else:
+                    print(f"Failed to fetch products: {response.status}")
+                    return []
+        except Exception as e:
+            print(f"Error fetching products: {e}")
+            return []
     
     async def close(self):
         """Close the aiohttp session"""

@@ -342,37 +342,31 @@
                 async subscribeToPackage(packageId) {
                     console.log('Subscribing to package:', packageId);
                     this.loading = true;
-                    
-                    // Add timeout for the request
-                    const timeoutPromise = new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Request timeout')), 15000)
-                    );
-                    
                     try {
-                        const response = await Promise.race([
-                            fetch('/packages/subscribe', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    package_id: packageId,
-                                    payment_method: 'stripe' // Default payment method
-                                })
-                            }),
-                            timeoutPromise
-                        ]);
-                        
+                        // Get user_id from a global JS variable or template context
+                        const userId = '{{ user.id if user else "" }}';
+                        if (!userId) {
+                            alert('User not found. Please log in.');
+                            this.loading = false;
+                            return;
+                        }
+                        const response = await fetch(`/packages/checkout/${packageId}?user_id=${userId}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
                         if (response.ok) {
                             const result = await response.json();
-                            alert('Subscription created successfully!');
-                            window.location.reload();
+                            if (result.checkout_url) {
+                                window.location.href = result.checkout_url;
+                            } else {
+                                alert('Failed to get checkout URL.');
+                            }
                         } else {
                             const error = await response.json();
                             alert('Error: ' + error.detail);
                         }
                     } catch (error) {
-                        console.error('Subscription error:', error);
+                        console.error('Checkout error:', error);
                         alert('Error: ' + error.message);
                     } finally {
                         this.loading = false;

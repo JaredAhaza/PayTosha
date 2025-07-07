@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Form
 from app.utils.supabase_client import supabase
 from app.schemas import UserCreate, UserLogin
 from app.utils.timezone import convert_to_eat
@@ -11,8 +11,11 @@ from app.services.useautumn import useautumn_service
 from app.utils.context_detection import context_detector
 from uuid import UUID
 from app.utils.security import hash_password, verify_password
+from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 router = APIRouter()
+templates = Jinja2Templates(directory="app/templates")
 
 @router.post("/users")
 async def create_user(user: UserCreate, request: Request):
@@ -315,3 +318,21 @@ def login(user: UserLogin):
             "persona_guess": user_data.get("persona_guess", "unknown")
         }
     }
+
+@router.get("/admin/login", response_class=HTMLResponse)
+def admin_login_page(request: Request):
+    return templates.TemplateResponse("admin_login.html", {"request": request})
+
+@router.post("/admin/login")
+def admin_login(request: Request, email: str = Form(...), password: str = Form(...)):
+    user_response = supabase.table("users").select("*").eq("email", email).execute()
+    if not user_response.data:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    user = user_response.data[0]
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Not an admin user")
+    # Add your password verification logic here
+    # If valid:
+    response = RedirectResponse(url="/packages/admin/packages-panel?admin=1", status_code=302)
+    # Optionally set a session/cookie here for real auth
+    return response

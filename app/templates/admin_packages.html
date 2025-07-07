@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Packages</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 py-8" x-data="adminPackages()">
+        <h1 class="text-3xl font-bold mb-6">Admin: Manage Packages</h1>
+        <!-- Add New Package Form -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Add New Package</h2>
+            <form @submit.prevent="addPackage">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700">Name</label>
+                        <input type="text" x-model="newPackage.name" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Tier</label>
+                        <input type="text" x-model="newPackage.tier" class="w-full border rounded px-3 py-2" required placeholder="e.g. free, student, fair, standard, premium">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Price ($/month)</label>
+                        <input type="number" x-model="newPackage.price" class="w-full border rounded px-3 py-2" min="0" step="0.01" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Original Price ($/month)</label>
+                        <input type="number" x-model="newPackage.original_price" class="w-full border rounded px-3 py-2" min="0" step="0.01" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Max Users</label>
+                        <input type="number" x-model="newPackage.max_users" class="w-full border rounded px-3 py-2" min="1" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Storage Limit (GB)</label>
+                        <input type="number" x-model="newPackage.storage_limit_gb" class="w-full border rounded px-3 py-2" min="1" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">API Calls per Month</label>
+                        <input type="number" x-model="newPackage.api_calls_per_month" class="w-full border rounded px-3 py-2" min="1" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Support Level</label>
+                        <select x-model="newPackage.support_level" class="w-full border rounded px-3 py-2" required>
+                            <option value="community">Community</option>
+                            <option value="email">Email</option>
+                            <option value="priority">Priority</option>
+                            <option value="dedicated">Dedicated</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Description</label>
+                    <textarea x-model="newPackage.description" class="w-full border rounded px-3 py-2" required></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Features (comma separated)</label>
+                    <input type="text" x-model="newPackage.features" class="w-full border rounded px-3 py-2" required>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Package</button>
+            </form>
+        </div>
+        <!-- Packages Table -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">All Packages</h2>
+            <table class="w-full table-auto mb-4">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="px-4 py-2 text-left">Name</th>
+                        <th class="px-4 py-2 text-left">Price</th>
+                        <th class="px-4 py-2 text-left">Description</th>
+                        <th class="px-4 py-2 text-left">Features</th>
+                        <th class="px-4 py-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="pkg in packages" :key="pkg.id">
+                        <tr>
+                            <td class="px-4 py-2 font-semibold" x-text="pkg.name"></td>
+                            <td class="px-4 py-2" x-text="'$' + pkg.price"></td>
+                            <td class="px-4 py-2" x-text="pkg.description"></td>
+                            <td class="px-4 py-2" x-text="pkg.features ? pkg.features.join(', ') : ''"></td>
+                            <td class="px-4 py-2 space-x-2">
+                                <button @click="editPackage(pkg)" class="bg-yellow-400 text-white px-2 py-1 rounded">Edit</button>
+                                <button @click="deletePackage(pkg.id)" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+            <!-- Edit Package Modal -->
+            <div x-show="editing" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                    <h2 class="text-xl font-semibold mb-4">Edit Package</h2>
+                    <form @submit.prevent="updatePackage">
+                        <div class="mb-4">
+                            <label class="block text-gray-700">Name</label>
+                            <input type="text" x-model="editPackageData.name" class="w-full border rounded px-3 py-2" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700">Price ($/month)</label>
+                            <input type="number" x-model="editPackageData.price" class="w-full border rounded px-3 py-2" min="0" step="0.01" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700">Description</label>
+                            <textarea x-model="editPackageData.description" class="w-full border rounded px-3 py-2"></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700">Features (comma separated)</label>
+                            <input type="text" x-model="editPackageData.features" class="w-full border rounded px-3 py-2">
+                        </div>
+                        <div class="flex justify-end space-x-2">
+                            <button type="button" @click="editing=false" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">Cancel</button>
+                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    function adminPackages() {
+        return {
+            packages: [],
+            newPackage: { name: '', price: '', description: '', features: '' },
+            editing: false,
+            editPackageData: {},
+            fetchPackages() {
+                fetch('/admin/packages', { headers: { 'X-Admin-Auth': 'secret' } })
+                    .then(res => res.json())
+                    .then(data => { this.packages = data; });
+            },
+            addPackage() {
+                const payload = { ...this.newPackage, features: this.newPackage.features.split(',').map(f => f.trim()) };
+                fetch('/admin/packages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Admin-Auth': 'secret' },
+                    body: JSON.stringify(payload)
+                })
+                .then(() => { this.fetchPackages(); this.newPackage = { name: '', price: '', description: '', features: '' }; });
+            },
+            editPackage(pkg) {
+                this.editing = true;
+                this.editPackageData = { ...pkg, features: pkg.features ? pkg.features.join(', ') : '' };
+            },
+            updatePackage() {
+                const payload = { ...this.editPackageData, features: this.editPackageData.features.split(',').map(f => f.trim()) };
+                fetch(`/admin/packages/${this.editPackageData.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Admin-Auth': 'secret' },
+                    body: JSON.stringify(payload)
+                })
+                .then(() => { this.fetchPackages(); this.editing = false; });
+            },
+            deletePackage(id) {
+                fetch(`/admin/packages/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'X-Admin-Auth': 'secret' }
+                })
+                .then(() => { this.fetchPackages(); });
+            },
+            init() {
+                this.fetchPackages();
+            }
+        };
+    }
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('adminPackages', adminPackages);
+    });
+    </script>
+</body>
+</html> 

@@ -17,6 +17,7 @@ class UserCreate(BaseModel):
     facebook_url: Optional[HttpUrl] = None
     github_url: Optional[HttpUrl] = None
     personal_website: Optional[HttpUrl] = None
+    is_admin: Optional[bool] = False
 
     @validator('password')
     def validate_password(cls, v):
@@ -248,3 +249,6 @@ class TierPricingCreate(BaseModel):
 class OrderCreate(BaseModel):
     product_id: UUID
     payment_method: str = "stripe"
+
+class User(BaseModel):
+    is_admin: bool = False

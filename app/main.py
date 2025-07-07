@@ -520,3 +520,11 @@ async def adaptive_dashboard(request: Request, username: str):
     except Exception as e:
         logging.exception("Dashboard routing error")
         raise HTTPException(status_code=500, detail="Something went wrong.")
+
+@app.get("/payment/success", response_class=HTMLResponse)
+def payment_success(request: Request):
+    return templates.TemplateResponse("success.html", {"request": request})
+
+@app.get("/payment/cancel", response_class=HTMLResponse)
+def payment_cancel(request: Request):
+    return templates.TemplateResponse("cancel.html", {"request": request})

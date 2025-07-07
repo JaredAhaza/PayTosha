@@ -20,6 +20,7 @@ class User(Base):
     persona_reasoning = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_admin = Column(Boolean, default=False)
 
 class ContextProfile(Base):
     __tablename__ = "context_profiles"

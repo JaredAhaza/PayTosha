@@ -6,13 +6,16 @@ from uuid import UUID
 import json
 
 from app.services.packages import PackageService
-from app.schemas import Package, UserPackage, PackageWithSubscription, PackageComparison, UserPackageCreate, UserPackageUpdate
+from app.schemas import Package, UserPackage, PackageWithSubscription, PackageComparison, UserPackageCreate, UserPackageUpdate, PackageCreate, PackageUpdate
 from app.utils.security import get_current_user_from_session
 from app.utils.supabase_client import supabase
+from app.services.useautumn import useautumn_service
 
 router = APIRouter(prefix="/packages", tags=["packages"])
 templates = Jinja2Templates(directory="app/templates")
 package_service = PackageService()
+
+admin_router = APIRouter(prefix="/admin/packages", tags=["Admin Packages"])
 
 # 🔹 API Routes
 
@@ -203,6 +206,18 @@ async def create_default_packages():
     except Exception as e:
         print(f"❌ Error creating packages: {e}")
         return {"error": str(e)}
+
+@router.post("/checkout/{package_id}")
+async def generate_checkout_url(package_id: str, request: Request):
+    user_id = request.query_params.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Missing user_id")
+    # Call UseAutumn to generate checkout URL
+    result = await useautumn_service.attach_product(user_id, package_id)
+    if result.get("success") and result.get("checkout_url"):
+        return {"checkout_url": result["checkout_url"]}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to generate checkout URL")
 
 # 🔹 Frontend Routes
 
@@ -403,4 +418,51 @@ async def get_package(package_id: UUID):
     package = await package_service.get_package_by_id(package_id)
     if not package:
         raise HTTPException(status_code=404, detail="Package not found")
-    return package 
+    return package
+
+# Placeholder admin check
+def admin_required(request: Request):
+    # TODO: Replace with real admin authentication
+    if not request.headers.get("X-Admin-Auth") == "secret":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+@admin_router.get("/", response_model=List[Package])
+def list_packages(request: Request, admin: bool = Depends(admin_required)):
+    response = supabase.table("packages").select("*").execute()
+    return response.data
+
+@admin_router.post("/", response_model=Package)
+def create_package(pkg: PackageCreate, request: Request, admin: bool = Depends(admin_required)):
+    response = supabase.table("packages").insert(pkg.model_dump(mode="json")).execute()
+    return response.data[0]
+
+@admin_router.put("/{package_id}", response_model=Package)
+def update_package(package_id: str, pkg: PackageUpdate, request: Request, admin: bool = Depends(admin_required)):
+    response = supabase.table("packages").update(pkg.model_dump(mode="json")).eq("id", package_id).execute()
+    return response.data[0]
+
+@admin_router.delete("/{package_id}")
+def delete_package(package_id: str, request: Request, admin: bool = Depends(admin_required)):
+    supabase.table("packages").delete().eq("id", package_id).execute()
+    return {"success": True}
+
+@router.get("/admin/packages-panel", response_class=HTMLResponse)
+def admin_packages_panel(request: Request):
+    # For now, allow access if ?admin=1 is in the query params
+    is_admin = request.query_params.get("admin") == "1"
+    if not is_admin:
+        return HTMLResponse("<h1>403 Forbidden</h1><p>Admin access required.</p>", status_code=403)
+    return templates.TemplateResponse("admin_packages.html", {"request": request})
+
+@router.get("/recommended/{username}")
+def get_recommended_package(username: str):
+    # Fetch the user's context profile
+    context_response = supabase.table("context_profiles").select("tier_suggestion").eq("username", username).execute()
+    if not context_response.data:
+        return {"error": "No context profile found for user."}
+    tier_suggestion = context_response.data[0]["tier_suggestion"]
+    # Fetch the recommended package by tier
+    package_response = supabase.table("packages").select("*").eq("tier", tier_suggestion).eq("is_active", True).execute()
+    if not package_response.data:
+        return {"error": f"No package found for tier '{tier_suggestion}'"}
+    return {"recommended_package": package_response.data[0]} 

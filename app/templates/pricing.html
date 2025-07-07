@@ -298,55 +298,29 @@
                 },
 
                 async upgradePlan(planId) {
-                    this.loading = true;
-                    this.loadingMessage = 'Preparing your upgrade...';
-
+                    const userId = '{{ user.id if user else "" }}';
+                    if (!userId) {
+                        alert('User not found. Please log in.');
+                        return;
+                    }
                     try {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const username = urlParams.get('username');
-                        
-                        if (!username) {
-                            alert('Please log in to upgrade your plan');
-                            return;
-                        }
-
-                        // Get user ID first
-                        const userResponse = await fetch(`/api/user/${username}`);
-                        if (!userResponse.ok) {
-                            throw new Error('User not found');
-                        }
-                        
-                        const userData = await userResponse.json();
-                        const userId = userData.id;
-
-                        // Attach product using UseAutumn
-                        const response = await fetch(`/useautumn/attach/${userId}/${planId}`, {
+                        const response = await fetch(`/packages/checkout/${planId}?user_id=${userId}`, {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                success_url: `${window.location.origin}/welcome/${username}?upgrade=success`,
-                                cancel_url: `${window.location.origin}/pricing?username=${username}`
-                            })
+                            headers: { 'Content-Type': 'application/json' }
                         });
-
                         if (response.ok) {
                             const result = await response.json();
-                            if (result.success && result.checkout_url) {
-                                // Redirect to Stripe checkout
+                            if (result.checkout_url) {
                                 window.location.href = result.checkout_url;
                             } else {
-                                throw new Error(result.error || 'Failed to create checkout session');
+                                alert('Failed to get checkout URL.');
                             }
                         } else {
-                            throw new Error('Failed to initiate upgrade');
+                            const error = await response.json();
+                            alert('Error: ' + error.detail);
                         }
                     } catch (error) {
-                        console.error('Error upgrading plan:', error);
-                        alert('Error upgrading plan: ' + error.message);
-                    } finally {
-                        this.loading = false;
+                        alert('Error: ' + error.message);
                     }
                 }
             }
